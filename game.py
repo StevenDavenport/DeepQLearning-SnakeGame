@@ -32,7 +32,10 @@ class Game:
         self.food = Food(self.height, self.width)
         self.play()
 
-    '''def print_score(self, score):
+    '''def print_score(sel
+        self.inputs = []
+
+    def update(self, change_x, change_y):f, score):
         #value = self.score_font.render(str(score), True, self.yellow)
         #self.display.blit(value, [0, 0])
         #print(score)'''
