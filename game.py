@@ -72,8 +72,10 @@ class Game:
             if event.type == pygame.QUIT:
                 return True
             if event.type == pygame.KEYDOWN:
+                '''
                 if self.game_paused:
                     self.game_paused = False
+                '''
                 if event.key == pygame.K_SPACE:
                     return True
                 if event.key == pygame.K_p:
