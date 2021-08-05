@@ -7,7 +7,7 @@ import time
 
 from keras.models import Model, load_model, Sequential 
 from keras.layers import Input, Dense
-from keras.optimizers import Adam, RMSProp
+#from keras.optimizers import Adam, RMSProp
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -58,3 +58,5 @@ class Brain:
         plt.plot(self.moving_avg)    
         plt.pause(0.001)
     
+    def learn(self, episodes=20):
+        self.model = self.build_model 

@@ -1,4 +1,5 @@
 import math
+from brain_obj import Brain
 
 class Snake:
     def __init__(self, game_height, game_width, length):
@@ -11,6 +12,7 @@ class Snake:
         self.pos_y = self.game_height / 2
         self.length = length
         self.inputs = []
+        self.brain = Brain()
 
     def update(self, change_x, change_y):
         self.head = []

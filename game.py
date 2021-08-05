@@ -1,7 +1,7 @@
 import pygame
 from snake_obj import Snake
 from food_obj import Food
-
+from itertools import count
 
 class Game:
     height = 600
@@ -23,14 +23,14 @@ class Game:
     #font_style = pygame.font.SysFont("bahnschrift", 25)
     #score_font = pygame.font.SysFont("comicsansms", 35)
 
-    def __init__(self):
+    def __init__(self, learning=False):
         pygame.init()
         self.game_paused = False
         self.snake_x_change = 0
         self.snake_y_change = 0
         self.snake = Snake(self.height, self.width, 75)
         self.food = Food(self.height, self.width)
-        self.play()
+        self.learn() if learning else self.play()
 
     '''def print_score(sel
         self.inputs = []
@@ -100,6 +100,29 @@ class Game:
                     self.snake_x_change = 0
                     self.snake.direction = 2
         return False
+
+    def render(self):
+        self.display.fill(self.white)
+        self.draw_snake()
+        self.draw_food()
+
+
+    def learn(self, episodes=20):
+        # reset the game
+        self.__init__()
+        state = None
+        done = False
+        for step in Count():
+            self.render()
+            # Decide on an action
+            action = None
+            if random.random() <= self.snake.brain.epsilon:
+                action = random.randrange(self.snake.brain.num_actions)
+            else:
+                action = np.argmax(self.model.predict(state))
+            # Make the action
+            
+            
 
     def play(self):
         game_over = False
