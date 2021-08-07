@@ -1,3 +1,4 @@
+from random import uniform
 import pygame
 from snake_obj import Snake
 from food_obj import Food
@@ -31,6 +32,8 @@ class Game:
         self.snake = Snake(self.height, self.width, 75)
         self.food = Food(self.height, self.width)
         self.learn() if learning else self.play()
+        self.steps_taken = 0
+        self.step_limit = 50
 
     '''def print_score(sel
         self.inputs = []
@@ -106,14 +109,85 @@ class Game:
         self.draw_snake()
         self.draw_food()
 
+    def collision(self):
+        done = False
+        if self.snake_hit_food_check():
+            self.snake.reward = 100
+        elif self.snake_hit_snake_check() or self.snake_hit_snake_check() or self.steps_taken > self.step_limit:
+            self.snake.reward = -100
+            done = True
+        else:
+            self.snake.reward = 1
+        return self.snake.reward, done
+
+    def step(self, action):
+        if self.snake.direction == 0: # UP
+            if action == 0: # left(left)
+                self.snake_x_change = -self.snake_block
+                self.snake_y_change = 0
+                self.snake.direction = 3
+            elif action == 1: # forward(up)
+                self.snake_y_change = -self.snake_block
+                self.snake_x_change = 0
+                self.snake.direction = 0
+            elif action == 2: # right(right)
+                self.snake_x_change = self.snake_block
+                self.snake_y_change = 0
+                self.snake.direction = 1
+
+        elif self.snake.direction == 1: # right
+            if action == 0: # left(up)
+                self.snake_y_change = -self.snake_block
+                self.snake_x_change = 0
+                self.snake.direction = 0
+            elif action == 1: # forward(right)
+                self.snake_x_change = self.snake_block
+                self.snake_y_change = 0
+                self.snake.direction = 1
+            elif action == 2: # right(down)
+                self.snake_y_change = self.snake_block
+                self.snake_x_change = 0
+                self.snake.direction = 2
+
+        elif self.snake.direction == 2: # down
+            if action == 0: # left(right)
+                self.snake_x_change = self.snake_block
+                self.snake_y_change = 0
+                self.snake.direction = 1
+            elif action == 1: # forward(down)
+                self.snake_y_change = self.snake_block
+                self.snake_x_change = 0
+                self.snake.direction = 2
+            elif action == 2: # right(left)
+                self.snake_x_change = -self.snake_block
+                self.snake_y_change = 0
+                self.snake.direction = 3
+
+        elif self.snake.direction == 3: # left
+            if action == 0: # left(down)
+                self.snake_y_change = self.snake_block
+                self.snake_x_change = 0
+                self.snake.direction = 2
+            elif action == 1: # forward(left)
+                self.snake_x_change = -self.snake_block
+                self.snake_y_change = 0
+                self.snake.direction = 3  
+            elif action == 2: # right(up)
+                self.snake_y_change = -self.snake_block
+                self.snake_x_change = 0
+                self.snake.direction = 0
+        self.steps_taken += 1
+
+        # return next_state, reward, done 
+        return self.snake.look(self.food.pos_x, self.food.pos_y), self.collision()
 
     def learn(self, episodes=20):
         # reset the game
         self.__init__()
         state = None
         done = False
+        self.render()
         for step in Count():
-            self.render()
             # Decide on an action
             action = None
             if random.random() <= self.snake.brain.epsilon:
@@ -121,7 +195,9 @@ class Game:
             else:
                 action = np.argmax(self.model.predict(state))
             # Make the action
-            
+            next_state, reward, done = self.step(action)
+
+            self.snake.brain.replay
             
 
     def play(self):

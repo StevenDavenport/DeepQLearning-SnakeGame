@@ -13,6 +13,7 @@ class Snake:
         self.length = length
         self.inputs = []
         self.brain = Brain()
+        self.reward = 0
 
     def update(self, change_x, change_y):
         self.head = []
@@ -72,15 +73,15 @@ class Snake:
 
     def look(self, x, y):
         if self.direction == 0:
-            self.look_left()
-            self.look_up()
-            self.look_right()
+            self.look_left()        # left 
+            self.look_up()          # forward
+            self.look_right()       # right
         if self.direction == 1:
-            self.look_up()
-            self.look_right()
-            self.look_down()
+            self.look_up()          # left
+            self.look_right()       # forward
+            self.look_down()        # right
         if self.direction == 2:
-            self.look_right()
+            self.look_right()       # etc...
             self.look_down()
             self.look_left()
         if self.direction == 3:
