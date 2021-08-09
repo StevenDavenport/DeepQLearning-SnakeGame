@@ -34,6 +34,7 @@ class Game:
         self.learn() if learning else self.play()
         self.steps_taken = 0
         self.step_limit = 50
+        self.update_target = 20
 
     '''def print_score(sel
         self.inputs = []
@@ -182,22 +183,62 @@ class Game:
         return self.snake.look(self.food.pos_x, self.food.pos_y), self.collision()
 
     def learn(self, episodes=20):
-        # reset the game
-        self.__init__()
-        state = None
-        done = False
-        self.render()
-        for step in Count():
-            # Decide on an action
-            action = None
-            if random.random() <= self.snake.brain.epsilon:
-                action = random.randrange(self.snake.brain.num_actions)
-            else:
-                action = np.argmax(self.model.predict(state))
-            # Make the action
-            next_state, reward, done = self.step(action)
+        for episode in range(episodes):
+            # reset the game
+            self.__init__()
+            state = self.snake.look(self.food.pos_x, self.food.pos_y)
+            done = False
+            self.render()
+            for step in Count():
+                # Decide on an action
+                action = None
+                if random.random() <= self.snake.brain.epsilon:
+                    action = random.randrange(self.snake.brain.num_actions)
+                else:
+                    action = np.argmax(self.model.predict(state))
+                # Make the action
+                next_state, reward, done = self.step(action)
+                # Add experience to replay memory
+                self.snake.brain.memory.append((state, action, reward, next_state, done))
+                # Update epsilon
+                if len(self.snake.brain.memory) > self.train_start:
+                    if self.snake.brain.epsilon > self.snake.brain.epsilon_min:
+                        self.snake.brain.epsilon *= self.snake.brain.epsilon_decay
+                # Update target network
+                if self.steps_taken % self.update_target == 0:
+                    self.snake.brain.update_target_model()
+                # Check if episode is done
+                if done:
+                    print("Episode: {}/{}, score: {}, e: {:.2}".format(episode, episodes, step, self.snake.brain.epsilon))
+                    self.snake.brain.episode_reward.append(step)
+                    self.snake.brain.plot()
+                    if step >= self.score_save_limit:
+                        self.snake.brain.save_model(step)
+                    break
+                # Create a batch from replay memory
+                if len(self.snake.brain.memory) >= self.snake.brain.train_start:
+                    batch = random.sample(self.snake.brain.memory, min(len(self.snake.brain.memory), self.snake.brain.batch_size))
+                    state_batch, next_state_batch = [], []
+                    # Put states and next states in a list
+                    for _state, _action, _reward, _next_state, _done in batch:
+                        state_batch.append(_state)
+                        next_state_batch.append(_next_state)
+                        # get the reward and next rewards
+                    state_batch = np.array(state_batch).reshape(self.snake.brain.batch_size, self.snake.brain.num_observations)
+                    target = self.snake.brain.model.predict(state_batch)
+                    target_next = self.snake.brain.target_model.predict(next_state_batch)
+                    # get q values
+                    x = 0
+                    for _state, _action, _reward, _next_state, _done in batch:
+                        if _done:
+                            target[x][_action] = _reward
+                        else:
+                            target[x][_action] = _reward + self.snake.brain.gamma * (np.amax(target_next[x]))
+                        x+=1
+                    # Train Network
+                    self.snake.brain.model.fit(state_batch, target, batch_size=self.snake.brain.batch_size, verbose=0)
 
-            self.snake.brain.replay
+            
             
 
     def play(self):

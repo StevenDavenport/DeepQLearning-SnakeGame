@@ -31,6 +31,7 @@ class Brain:
         self.model = None
         self.target_model = None
         self.score_save_limit = 500
+        self.epsilon_decay = 0.999
 
     def build_model(self):
         model = Sequential()
@@ -58,5 +59,8 @@ class Brain:
         plt.plot(self.moving_avg)    
         plt.pause(0.001)
     
-    def learn(self, episodes=20):
-        self.model = self.build_model 
+    def update_target_model(self):
+        self.target_model.set_weights(self.model.get_weights())
+
+    def save_model(self, step):
+        self.model.save('model' + str(step) + '.h5')
