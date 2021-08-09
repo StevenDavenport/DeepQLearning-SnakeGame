@@ -3,6 +3,7 @@ import pygame
 from snake_obj import Snake
 from food_obj import Food
 from itertools import count
+import random
 
 class Game:
     height = 600
@@ -25,16 +26,17 @@ class Game:
     #score_font = pygame.font.SysFont("comicsansms", 35)
 
     def __init__(self, learning=False):
-        pygame.init()
+        #pygame.init()
         self.game_paused = False
         self.snake_x_change = 0
         self.snake_y_change = 0
         self.snake = Snake(self.height, self.width, 75)
         self.food = Food(self.height, self.width)
-        self.learn() if learning else self.play()
         self.steps_taken = 0
         self.step_limit = 50
         self.update_target = 20
+        self.reset = False
+        self.learn() if learning else self.play()
 
     '''def print_score(sel
         self.inputs = []
@@ -180,22 +182,25 @@ class Game:
         self.steps_taken += 1
 
         # return next_state, reward, done 
-        return self.snake.look(self.food.pos_x, self.food.pos_y), self.collision()
+        next_state, reward = self.snake.look(self.food.pos_x, self.food.pos_y)
+        return next_state, reward, self.collision()
 
     def learn(self, episodes=20):
         for episode in range(episodes):
             # reset the game
-            self.__init__()
+            if self.reset:
+                self.__init__()
             state = self.snake.look(self.food.pos_x, self.food.pos_y)
             done = False
             self.render()
-            for step in Count():
+            for step in count():
+                self.reset = True
                 # Decide on an action
                 action = None
                 if random.random() <= self.snake.brain.epsilon:
                     action = random.randrange(self.snake.brain.num_actions)
                 else:
-                    action = np.argmax(self.model.predict(state))
+                    action = np.argmax(self.snake.brain.model.predict(state))
                 # Make the action
                 next_state, reward, done = self.step(action)
                 # Add experience to replay memory
