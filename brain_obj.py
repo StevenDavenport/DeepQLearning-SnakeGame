@@ -1,5 +1,6 @@
 import os
 import random
+from keras.optimizer_v2 import adam
 import numpy as np
 from collections import deque
 from itertools import count
@@ -7,7 +8,7 @@ import time
 
 from keras.models import Model, load_model, Sequential 
 from keras.layers import Input, Dense
-#from keras.optimizers import Adam, RMSProp
+from keras.optimizers import adam_v2
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -28,18 +29,18 @@ class Brain:
         self.moving_avg_period = 25
         self.moving_avg = []
         self.episode_rewards = []
-        self.model = None
-        self.target_model = None
+        self.model = self.build_model()
+        self.target_model = self.build_model()
         self.score_save_limit = 500
         self.epsilon_decay = 0.999
 
     def build_model(self):
         model = Sequential()
-        model.add(Dense(512, input_dim=self.observation_size, activation="relu", kernel_initializer='he_uniform'))
+        model.add(Dense(512, input_dim=self.num_observations, activation="relu", kernel_initializer='he_uniform'))
         model.add(Dense(256, activation="relu", kernel_initializer='he_uniform'))
         model.add(Dense(64, activation="relu", kernel_initializer='he_uniform'))
-        model.add(Dense(self.action_size, activation="linear", kernel_initializer='he_uniform'))
-        model.compile(loss="mse", optimizer=RMSprop(learning_rate=self.learning_rate, rho=0.95, epsilon=0.01), metrics=["accuracy"])
+        model.add(Dense(self.num_actions, activation="linear", kernel_initializer='he_uniform'))
+        model.compile(loss="mse", optimizer=adam.Adam(learning_rate=self.learning_rate), metrics=["accuracy"])
         return model
 
     def take_action(self):

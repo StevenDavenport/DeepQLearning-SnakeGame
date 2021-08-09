@@ -70,25 +70,28 @@ class Snake:
         distance_from_food_y = y - self.pos_y
         distance_from_food = math.sqrt((distance_from_food_x ** 2) + (distance_from_food_y ** 2))
         print(" Food: ", distance_from_food)
+        return distance_from_food
 
     def look(self, x, y):
+        state = []
         if self.direction == 0:
-            self.look_left()        # left 
-            self.look_up()          # forward
-            self.look_right()       # right
+            state.append(self.look_left())        # left 
+            state.append(self.look_up())          # forward
+            state.append(self.look_right())       # right
         if self.direction == 1:
-            self.look_up()          # left
-            self.look_right()       # forward
-            self.look_down()        # right
+            state.append(self.look_up())          # left
+            state.append(self.look_right())       # forward
+            state.append(self.look_down())        # right
         if self.direction == 2:
-            self.look_right()       # etc...
-            self.look_down()
-            self.look_left()
+            state.append(self.look_right())       # etc...
+            state.append(self.look_down())
+            state.append(self.look_left())
         if self.direction == 3:
-            self.look_down()
-            self.look_left()
-            self.look_up()
-        self.look_food(x, y)
+            state.append(self.look_down())
+            state.append(self.look_left())
+            state.append(self.look_up())
+        state.append(self.look_food(x, y))
+        return state
 
     def grow(self):
         self.length += 1

@@ -180,16 +180,19 @@ class Game:
                 self.snake_x_change = 0
                 self.snake.direction = 0
         self.steps_taken += 1
+        self.snake.update(self.snake_x_change, self.snake_y_change)
 
         # return next_state, reward, done 
-        next_state, reward = self.snake.look(self.food.pos_x, self.food.pos_y)
-        return next_state, reward, self.collision()
+        state = self.snake.look(self.food.pos_x, self.food.pos_y)
+        reward, done = self.collision()
+        return state, reward, done
+        #return self.snake.look(self.food.pos_x, self.food.pos_y), self.collision()
 
     def learn(self, episodes=20):
         for episode in range(episodes):
             # reset the game
-            if self.reset:
-                self.__init__()
+            #if self.reset:
+                #self.__init__()
             state = self.snake.look(self.food.pos_x, self.food.pos_y)
             done = False
             self.render()
@@ -200,13 +203,13 @@ class Game:
                 if random.random() <= self.snake.brain.epsilon:
                     action = random.randrange(self.snake.brain.num_actions)
                 else:
-                    action = np.argmax(self.snake.brain.model.predict(state))
+                    action = np.argmax(self.model.predict(state))
                 # Make the action
                 next_state, reward, done = self.step(action)
                 # Add experience to replay memory
                 self.snake.brain.memory.append((state, action, reward, next_state, done))
                 # Update epsilon
-                if len(self.snake.brain.memory) > self.train_start:
+                if len(self.snake.brain.memory) > self.snake.brain.train_start:
                     if self.snake.brain.epsilon > self.snake.brain.epsilon_min:
                         self.snake.brain.epsilon *= self.snake.brain.epsilon_decay
                 # Update target network
@@ -215,9 +218,9 @@ class Game:
                 # Check if episode is done
                 if done:
                     print("Episode: {}/{}, score: {}, e: {:.2}".format(episode, episodes, step, self.snake.brain.epsilon))
-                    self.snake.brain.episode_reward.append(step)
+                    self.snake.brain.episode_rewards.append(step)
                     self.snake.brain.plot()
-                    if step >= self.score_save_limit:
+                    if step >= self.snake.brain.score_save_limit:
                         self.snake.brain.save_model(step)
                     break
                 # Create a batch from replay memory
